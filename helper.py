@@ -9,6 +9,7 @@ from torch import optim
 import torch.nn.functional as F
 from torchvision import datasets, transforms, models
 import json
+import constants as Constant
 from collections import OrderedDict
 import time
 from PIL import Image
@@ -21,7 +22,7 @@ def get_network_inputs():
     while (flag == False):
     
         learn_rate = input("\n\nPlease enter the learning rate\n") 
-        hidden_layers = input("\nPlease enter the number of hidden layers seperated by commas \n Eg: 5,6,3,2 \n")
+        hidden_layers = input("\nPlease enter the number of hidden layers seperated by commas \nThe final hidden layer will be taken as the output layer \n Eg: 5,6,3,2 \n")
 
         try:
             learn_rate = int(learn_rate)
@@ -81,3 +82,55 @@ def build_network(learn_rate, input_layer, hidden_layers, partial_model):
             
             print('\nNeural network built')
             return (partial_model, criterion, optimizer)
+
+# Transforms images, creates and returns dataloader
+def get_dataloader(type, data_dir):
+    transforms = None
+    loader = None
+    if(type == Constant.TRAIN):
+        transforms = transforms.Compose([transforms.RandomRotation(30),
+                                        transforms.RandomResizedCrop(224),
+                                        transforms.RandomHorizontalFlip(),
+                                        transforms.ToTensor(),
+                                        transforms.Normalize([0.485, 0.456, 0.406], 
+                                                            [0.229, 0.224, 0.225])
+                                        ])
+
+        data = datasets.ImageFolder(data_dir, transform=transforms)
+        loader = torch.utils.data.DataLoader(data, batch_size=64, shuffle=True)
+        return loader
+    elif(type == Constant.TEST):
+        transforms = transforms.Compose([transforms.Resize(256),
+                                      transforms.CenterCrop(224),
+                                      transforms.ToTensor(),
+                                      transforms.Normalize([0.485, 0.456, 0.406], 
+                                                           [0.229, 0.224, 0.225])])
+
+        data = datasets.ImageFolder(data_dir, transform=transforms)
+        loader = torch.utils.data.DataLoader(test_data, batch_size=32)
+        return loader
+    elif(type == Constant.VALID):
+        transforms = transforms.Compose([transforms.Resize(256),
+                                      transforms.CenterCrop(224),
+                                      transforms.ToTensor(),
+                                      transforms.Normalize([0.485, 0.456, 0.406], 
+                                                           [0.229, 0.224, 0.225])])
+
+        data = datasets.ImageFolder(data_dir, transform=transforms)
+        loader = torch.utils.data.DataLoader(test_data, batch_size=32)
+        return loader
+    else:
+        print('\n\nInvalid Action Type, Please select TRAIN, TEST or VALID')
+        return False
+
+# Loads JSON file with a dictionary mapping the integer encoded classes to actual class names
+def map_labels():
+    flag = False
+    while(flag == False):
+        filePath = input('\nPlease enter path to label map JSON file from current location\n')
+        if(os.path.exists(filePath)):
+            with open(filePath, 'r') as f:
+            idx_to_class = json.load(f)  
+            flag = True
+            return idx_to_class
+    

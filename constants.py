@@ -1,0 +1,3 @@
+TRAIN = 'TRAIN'
+TEST = 'TEST'
+VALID = 'VALID'

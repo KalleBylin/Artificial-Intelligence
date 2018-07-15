@@ -1,5 +1,7 @@
 import helper
+import train
 import torch
+import os
 import numpy as np
 from torch import nn
 from torch import optim
@@ -7,9 +9,6 @@ import torch.nn.functional as F
 from torchvision import datasets, transforms, models
 
 def predict():
-    return print('To be done')
-
-def train_network():
     return print('To be done')
 
 def test_network():
@@ -54,7 +53,7 @@ hidden_layers = []
 model = None
 criterion = None
 optimizer = None
-actions = ['predict', 'build', 'train', 'test']
+actions = ['predict', 'build', 'train', 'test', 'exit']
 
 # checks if GPU is available else runs on CPU
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -64,7 +63,6 @@ output_layer = 102
 
 while (flag != True):
     action = input("\nWhat would you like to do? Actions include: \n{}\n".format(actions))
-    flag = True
     if(action == actions[0]):
         if(model != None):
             predict(model)
@@ -76,7 +74,7 @@ while (flag != True):
         
     elif(action == actions[2]):
         if(model != None):
-            train_network(model)
+            train.train_network(model)
         else:
             print('\nNo model has been selected \n')
 
@@ -86,9 +84,12 @@ while (flag != True):
         else:
             print('\nNo model has been selected \n')
 
+    elif(action == actions[4]):
+        flag = False
+
     else:
         print('Invalid selection. Please select from: \n{}\n'.format(actions))
-        flag = False
+    
 
 
 
