@@ -34,6 +34,7 @@ def train_network(model):
     steps = 0
     print('\nTraining the network\n')
     device = helper.get_device()
+    model = helper.load_device(model)
     stepsArr = []
     accuracyArr = []
     print("\nTrain loader has {} images\n".format(len(train_loader)))
@@ -82,7 +83,7 @@ def train_network(model):
                     else:
                         # Make sure training is back on
                         model.train()
-    print("\n\nTraining finished")
+    print("\n\nTraining finished\n")
     
 # Handles for initiating from train.py
 if __name__ == "__main__":

@@ -161,10 +161,9 @@ def save_checkpoint(model, class_to_idx):
 
 # Loads a pre-trained model from a checkpoint
 def load_checkpoint():
-    print("\nLoading model\n")
 
-    filepath = get_file_path("Please enter path of model checkpoint")
-    
+    filepath = get_file_path("\nPlease enter path of model checkpoint\n")
+    print("\nLoading model\n")
     checkpoint = torch.load(filepath, map_location=lambda storage, loc: storage)
     partial_model = get_model(checkpoint['name'])
     partial_model.hidden_layers = checkpoint['hidden_layers']
@@ -301,7 +300,7 @@ def process_image(image_path):
 # Get the index to class JSON file
 def get_idx_to_class():
     file_path = get_file_path('\nPlease enter the path of the index to class JSON file\n')
-    with open('file_path', 'r') as f:
+    with open(file_path, 'r') as f:
         return json.load(f)  
     
 # Builds a new network
