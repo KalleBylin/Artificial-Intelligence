@@ -15,20 +15,6 @@ def test_network():
     return print('To be done')
 
 
-def build_network():
-    
-    # Gets a valid model before proceeding
-    partial_model = helper.get_model(None)
-        
-    # Gets correct learn rate and hidden layers before proceeding
-    learn_rate, hidden_layers = helper.get_network_inputs()
-
-    # Buils the network
-    model, criterion, optimizer = helper.build_network(learn_rate, hidden_layers, partial_model)
-    model.criterion = criterion
-    model.optimizer = optimizer
-
-    return model
 
 
 
@@ -53,7 +39,7 @@ hidden_layers = []
 model = None
 criterion = None
 optimizer = None
-actions = ['predict', 'build', 'train', 'test', 'exit']
+actions = ['predict', 'build', 'train', 'test', 'save', 'load', 'exit']
 
 device = helper.get_device()
 
@@ -66,8 +52,8 @@ while (flag != True):
             print('\nNo model has been selected \n')
 
     elif(action == actions[1]):
-        model = build_network()
-        
+        model = helper.build_new_network()
+
     elif(action == actions[2]):
         if(model != None):
             train.train_network(model)
@@ -81,6 +67,15 @@ while (flag != True):
             print('\nNo model has been selected \n')
 
     elif(action == actions[4]):
+        if(model != None):
+            helper.save_checkpoint(model)
+        else:
+            print('\nNo model has been selected \n') 
+
+    elif(action == actions[5]):
+        model = helper.load_checkpoint()
+ 
+    elif(action == actions[6]):
         flag = False
 
     else:

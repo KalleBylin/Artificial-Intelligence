@@ -44,13 +44,13 @@ def get_model(model):
             model = input("\n\nPlease type the required model \n Models include: \n {} \n".format(ls_models))
 
         if(model == ls_models[0]):
-            print("Selected Model = {}".format(ls_models[0]))
+            print("\nSelected Model = {}\n".format(ls_models[0]))
             model = models.densenet161(pretrained=True)
             model.name = 'densenet161'
             model.input_layer = 1024
             return (model)
         elif(model == ls_models[1]):
-            print("Selected Model = {}".format(ls_models[1]))
+            print("\nSelected Model = {}\n".format(ls_models[1]))
             model = models.vgg16(pretrained=True)
             model.name = 'vgg16'
             model.input_layer = 25088
@@ -74,7 +74,7 @@ def build_network(learn_rate, hidden_layers, partial_model):
 
     classifier = nn.ModuleList([nn.Linear(partial_model.input_layer, hidden_layers[0])])
 
-    print('Range = {}'.format(len(hidden_layers) - 1))
+    print('\nLinking the neurons. {} layers found'.format(len(hidden_layers)))
     for i, item in enumerate(hidden_layers):    
         
         if(i != (len(hidden_layers) - 2)):
@@ -149,7 +149,7 @@ def map_labels():
 
 # Save the checkpoint 
 def save_checkpoint(model, class_to_idx):
-  
+    
     checkpoint = {'hidden_layers': model.hidden_layers,
                     'state_dict': model.state_dict(),
                     'class_to_idx': class_to_idx,
@@ -158,14 +158,14 @@ def save_checkpoint(model, class_to_idx):
                     'input_layer':model.input_layer,
                     'learn_rate':model.learn_rate
                  }
-    
+    print("\nSaving checkpoint\n")
     return torch.save(checkpoint, 'checkpoint.pth')    
 
-    print("\nSaving checkpoint\n")
-
 # Loads a pre-trained model from a checkpoint
-def load_checkpoint(filepath):
+def load_checkpoint():
     print("\nLoading model\n")
+
+    filepath = get_file_path("Please enter path of model checkpoint")
     
     checkpoint = torch.load(filepath, map_location=lambda storage, loc: storage)
     partial_model = get_model(checkpoint['name'])
@@ -178,8 +178,10 @@ def load_checkpoint(filepath):
     model, criterion, optimizer = build_network(partial_model.learn_rate, partial_model.hidden_layers, partial_model)
     model.load_state_dict(checkpoint['state_dict'])
     model.class_to_idx = checkpoint['class_to_idx']
+    model.criterion = criterion
+    model.optimizer = optimizer
     
-    return (model, criterion, optimizer)
+    return (model)
     
 
 # Does a validation pass on the model using the validation loader
@@ -223,6 +225,17 @@ def get_dir_path(message):
         else:
             print('\nInvalid path\n')
 
+# Prompts a message requesting for a file path, checks if the path is a valid path else requests again
+def get_file_path(message):
+    flag = False
+    while (flag == False):
+        file_path = input('\n' + message + '\n')
+        if(os.path.isfile(file_path)):
+            flag = True
+            return file_path
+        else:
+            print('\nInvalid path\n')
+
 # Prompts a message requesting for an int, checks if the type is an int else requests again
 def get_int(message):
     flag = False
@@ -237,6 +250,23 @@ def get_int(message):
             flag = False
     return(input_int)
 
+# Prompts a message requesting for an action, checks if the action is valid else requests again
+def build_or_load_model():
+    actions = ['build','load']
+    flag = False
+    while (flag != True):
+        action = input("\nWould you like to build or load the neural network. Responses include: \n{}\n".format(actions))
+        if(action == actions[0]):
+            flag = True
+            model = build_new_network()
+        elif(action == actions[1]):
+            flag = True
+            model = load_checkpoint()
+        else:
+            print('\nInvalid action \n')
+            
+    return(model)
+
 # Checks if GPU is available else runs on CPU
 def get_device():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -247,3 +277,18 @@ def get_device():
 def load_device(model):
     return model.to(get_device())
     
+# Builds a new network
+def build_new_network():
+    
+    # Gets a valid model before proceeding
+    partial_model = helper.get_model(None)
+        
+    # Gets correct learn rate and hidden layers before proceeding
+    learn_rate, hidden_layers = helper.get_network_inputs()
+
+    # Buils the network
+    model, criterion, optimizer = helper.build_network(learn_rate, hidden_layers, partial_model)
+    model.criterion = criterion
+    model.optimizer = optimizer
+
+    return model
