@@ -83,6 +83,7 @@ def train_network(model):
                         # Make sure training is back on
                         model.train()
     print("\n\nTraining finished")
+    
 # Handles for initiating from train.py
 if __name__ == "__main__":
     train_network(None)

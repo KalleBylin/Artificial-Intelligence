@@ -98,38 +98,36 @@ def build_network(learn_rate, hidden_layers, partial_model):
 
 # Transforms images, creates and returns dataloader
 def get_dataloader(data_dir, type):
-    transforms = None
     loader = None
     if(type == Constant.TRAIN):
-        transforms = transforms.Compose([transforms.RandomRotation(30),
+        transform = transforms.Compose([transforms.RandomRotation(30),
                                         transforms.RandomResizedCrop(224),
                                         transforms.RandomHorizontalFlip(),
                                         transforms.ToTensor(),
                                         transforms.Normalize([0.485, 0.456, 0.406], 
-                                                            [0.229, 0.224, 0.225])
-                                        ])
+                                                            [0.229, 0.224, 0.225])])
 
-        data = datasets.ImageFolder(data_dir, transform=transforms)
+        data = datasets.ImageFolder(data_dir, transform=transform)
         loader = torch.utils.data.DataLoader(data, batch_size=64, shuffle=True)
         return loader
     elif(type == Constant.TEST):
-        transforms = transforms.Compose([transforms.Resize(256),
+        transform = transforms.Compose([transforms.Resize(256),
                                       transforms.CenterCrop(224),
                                       transforms.ToTensor(),
                                       transforms.Normalize([0.485, 0.456, 0.406], 
                                                            [0.229, 0.224, 0.225])])
 
-        data = datasets.ImageFolder(data_dir, transform=transforms)
+        data = datasets.ImageFolder(data_dir, transform=transform)
         loader = torch.utils.data.DataLoader(data, batch_size=32)
         return loader
     elif(type == Constant.VALID):
-        transforms = transforms.Compose([transforms.Resize(256),
+        transform = transforms.Compose([transforms.Resize(256),
                                       transforms.CenterCrop(224),
                                       transforms.ToTensor(),
                                       transforms.Normalize([0.485, 0.456, 0.406], 
                                                            [0.229, 0.224, 0.225])])
 
-        data = datasets.ImageFolder(data_dir, transform=transforms)
+        data = datasets.ImageFolder(data_dir, transform=transform)
         loader = torch.utils.data.DataLoader(data, batch_size=32)
         return loader
     else:
@@ -152,7 +150,7 @@ def save_checkpoint(model, class_to_idx):
     
     checkpoint = {'hidden_layers': model.hidden_layers,
                     'state_dict': model.state_dict(),
-                    'class_to_idx': class_to_idx,
+                    'idx_to_class': idx_to_class,
                     'drop_rate':model.drop_rate,
                     'name':model.name,
                     'input_layer':model.input_layer,
@@ -177,7 +175,7 @@ def load_checkpoint():
 
     model, criterion, optimizer = build_network(partial_model.learn_rate, partial_model.hidden_layers, partial_model)
     model.load_state_dict(checkpoint['state_dict'])
-    model.class_to_idx = checkpoint['class_to_idx']
+    model.idx_to_class = checkpoint['idx_to_class']
     model.criterion = criterion
     model.optimizer = optimizer
     
@@ -220,6 +218,7 @@ def get_dir_path(message):
     while (flag == False):
         dir_path = input('\n' + message + '\n')
         if(os.path.isdir(dir_path)):
+            print('\nDir path is {}'.format(dir_path))
             flag = True
             return dir_path
         else:
@@ -276,6 +275,34 @@ def get_device():
 # Returns the model with the device loaded
 def load_device(model):
     return model.to(get_device())
+
+# Applies transformations to a single image
+def process_image(image_path):
+
+    print("\nPre-processing of image with path {}".format(image_path))
+
+    image_pil = Image.open(image_path)
+
+    preprocess = transforms.Compose([
+        transforms.Resize(256),
+        transforms.CenterCrop(224),
+        transforms.ToTensor(),
+        transforms.Normalize([0.485, 0.456, 0.406], 
+                             [0.229, 0.224, 0.225])
+        ])
+    
+    image_tensor = preprocess(image_pil)
+    
+    # unsqueeze to add a dimension for the batch. _ makes things happen in place
+    image_tensor.unsqueeze_(0)
+    
+    return image_tensor
+
+# Get the index to class JSON file
+def get_idx_to_class():
+    file_path = get_file_path('\nPlease enter the path of the index to class JSON file\n')
+    with open('file_path', 'r') as f:
+        return json.load(f)  
     
 # Builds a new network
 def build_new_network():
