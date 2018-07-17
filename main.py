@@ -15,20 +15,20 @@ def test_network():
     return print('To be done')
 
 
-def build_network(device):
+def build_network():
     
     # Gets a valid model before proceeding
-    partial_model, input_layer = helper.get_model()
+    partial_model = helper.get_model(None)
         
     # Gets correct learn rate and hidden layers before proceeding
     learn_rate, hidden_layers = helper.get_network_inputs()
 
-    model, criterion, optimizer = helper.build_network(learn_rate, input_layer, hidden_layers, partial_model)
-    
-    # load the model to the device GPU / CPU
-    model.to(device)
+    # Buils the network
+    model, criterion, optimizer = helper.build_network(learn_rate, hidden_layers, partial_model)
+    model.criterion = criterion
+    model.optimizer = optimizer
 
-    return model, criterion, optimizer
+    return model
 
 
 
@@ -55,11 +55,7 @@ criterion = None
 optimizer = None
 actions = ['predict', 'build', 'train', 'test', 'exit']
 
-# checks if GPU is available else runs on CPU
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-# TODO Change output layer to one that can be entered by a user
-output_layer = 102
+device = helper.get_device()
 
 while (flag != True):
     action = input("\nWhat would you like to do? Actions include: \n{}\n".format(actions))
@@ -70,7 +66,7 @@ while (flag != True):
             print('\nNo model has been selected \n')
 
     elif(action == actions[1]):
-        model, criterion, optimizer = build_network(device)
+        model = build_network()
         
     elif(action == actions[2]):
         if(model != None):
